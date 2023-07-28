@@ -57,6 +57,18 @@ export class User extends Document {
   async validatePassword(password: string): Promise<boolean> {
     return await bcrypt.compare(password, this.password);
   }
+
+  changePasswordAfter(JWTTimestamp: number) {
+    if (this.passwordChangedAt) {
+      const changedTimestamp = parseInt(
+        (+this.passwordChangedAt.getTime() / 1000).toString(),
+        10,
+      );
+      return JWTTimestamp < changedTimestamp;
+    }
+
+    return false;
+  }
 }
 export const UserSchema = SchemaFactory.createForClass(User);
 
@@ -81,19 +93,20 @@ UserSchema.methods.validatePassword = async function (
   return await bcrypt.compare(password, this.password);
 };
 
-// // This method is used in token validation to check if a user's password has been changed since they were last issued a token.
-// changePasswordAfter(JWTTimestamp: number) {
-//   if (this.passwordChangedAt) {
-//     const changedTimestamp = parseInt(
-//       (+this.passwordChangedAt.getTime() / 1000).toString(),
-//       10,
-//     );
-//     return JWTTimestamp < changedTimestamp;
-//   }
+// This method is used in token validation to check if a user's password has been changed since they were last issued a token.
+UserSchema.methods.changePasswordAfter = function (JWTTimestamp: number) {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(
+      (+this.passwordChangedAt.getTime() / 1000).toString(),
+      10,
+    );
+    return JWTTimestamp < changedTimestamp;
+  }
 
-//   return false;
-// }
+  return false;
+};
 
 /* Indexing */
 UserSchema.index({ email: 1, phonenumber: 1 });
 UserSchema.index({ googleId: 1 });
+UserSchema.index({ email: 1 });
