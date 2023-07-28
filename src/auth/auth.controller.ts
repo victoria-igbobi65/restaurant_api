@@ -1,7 +1,7 @@
 import { Body, Controller, Post, HttpException } from '@nestjs/common';
 
 import { AuthService } from './auth.service';
-import { createUserDto } from './dto/create-user.dto';
+import { createUserDto } from 'src/users/dto/create-user.dto';
 import { loginDto } from './dto/login.dto';
 
 @Controller('auth')
