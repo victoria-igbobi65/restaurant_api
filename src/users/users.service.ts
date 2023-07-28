@@ -21,9 +21,14 @@ export class UsersService {
     return await this.userModel.create(dto); // create new user
   }
 
-  async uploadProfilePicToCloudinary(file: Express.Multer.File) {
+  async uploadProfilePic(file: Express.Multer.File, email: string) {
     const profilePic = await this.cloudinaryService.uploadImage(file);
-    return profilePic;
+
+    const user = await this.findUserByEmail(email);
+    user.profilePic = profilePic.url; // Update user's document with the profile picture url
+    await user.save(); // save the updated document to the db
+
+    return { user };
   }
 
   async findUserByEmail(email: string) {
