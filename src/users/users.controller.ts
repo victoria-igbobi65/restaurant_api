@@ -23,6 +23,6 @@ export class UsersController {
     @UploadedFile() file: Express.Multer.File,
     @CurrentUser() user: User,
   ) {
-    return this.usersService.uploadProfilePic(file, user.email);
+    return this.usersService.uploadProfilePic(file, user);
   }
 }
