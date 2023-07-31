@@ -12,10 +12,10 @@ export class User extends Document {
   @Prop({ required: true, unique: true })
   email: string;
 
-  @Prop({ required: true })
+  @Prop({ default: null })
   countryCode: string;
 
-  @Prop({ required: true })
+  @Prop({ default: null })
   phonenumber: string;
 
   @Prop({ required: true })
@@ -24,7 +24,7 @@ export class User extends Document {
   @Prop({ unique: true, default: null })
   googleId: string;
 
-  @Prop({ enum: Gender, required: true })
+  @Prop({ enum: Gender, default: null })
   gender: string;
 
   @Prop({ default: null })
@@ -110,3 +110,4 @@ UserSchema.methods.changePasswordAfter = function (JWTTimestamp: number) {
 UserSchema.index({ email: 1, phonenumber: 1 });
 UserSchema.index({ googleId: 1 });
 UserSchema.index({ email: 1 });
+UserSchema.index({ id: 1 });
