@@ -7,6 +7,7 @@ import { createUserDto } from './dto/create-user.dto';
 import { E_USER_EXISTS } from 'src/common/constants/constants.text';
 import { CloudinaryService } from 'src/common/cloudinary/cloudinary.service';
 import { GoogleOauthDto } from 'src/auth/dto/google-oauth.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -28,10 +29,16 @@ export class UsersService {
 
   async uploadProfilePic(file: Express.Multer.File, user: User) {
     const profilePic = await this.cloudinaryService.uploadImage(file);
-
     user.profilePic = profilePic.url; // Update user's document with the profile picture url
     await user.save(); // save the updated document to the db
 
+    return { user };
+  }
+
+  async editUserProfile(dto: UpdateUserDto, id: string) {
+    const user = await this.userModel
+      .findByIdAndUpdate(id, dto, { new: true })
+      .exec();
     return { user };
   }
 
