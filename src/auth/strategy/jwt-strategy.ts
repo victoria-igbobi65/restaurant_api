@@ -20,7 +20,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: any) {
     const payloadIssuedAt = payload.iat; // Get the time the token was issued
-    const user = await this.usersService.findUserByEmail(payload.email);
+    const user = await this.usersService.findUserById(payload.sub);
 
     if (!user) throw new HttpException(E_USER_NO_LONGER_EXISTS, 403); // check if user with token still exists
     if (user.changePasswordAfter(payloadIssuedAt))
