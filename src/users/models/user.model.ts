@@ -40,7 +40,7 @@ export class User extends Document {
   accountVerified: boolean;
 
   @Prop({ default: true })
-  active: boolean;
+  isActive: boolean;
 
   @Prop({ required: true, select: false })
   password: string;
