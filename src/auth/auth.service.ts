@@ -6,6 +6,7 @@ import { createUserDto } from 'src/users/dto/create-user.dto';
 import { E_INCORRECT_CREDENTIALS } from 'src/common/constants/constants.text';
 import { loginDto } from './dto/login.dto';
 import { UsersService } from 'src/users/users.service';
+import { GoogleOauthDto } from './dto/google-oauth.dto';
 
 @Injectable()
 export class AuthService {
@@ -30,6 +31,31 @@ export class AuthService {
       throw new HttpException(E_INCORRECT_CREDENTIALS, 400);
     }
     const token = await this.signToken(user);
+    return { user, token };
+  }
+
+  async googleOauthSignIn(dto: GoogleOauthDto) {
+    let user = await this.usersService.findUserByGoogleId(dto.googleId);
+    let token: string;
+
+    // condition if user has either signed up with gooogle or performed account linking
+    if (user) {
+      token = await this.signToken(user);
+      return { user, token };
+    }
+
+    user = await this.usersService.findUserByEmail(dto.email);
+    // condition if user has signed up manually before
+    if (user) {
+      user.googleId = dto.googleId; // Perform account linking for user
+      await user.save();
+      token = await this.signToken(user);
+      return { user, token };
+    }
+
+    // if all conditions is false, save their google details to the db
+    user = await this.usersService.GoogleOauthCreateUser(dto);
+    token = await this.signToken(user);
     return { user, token };
   }
 
