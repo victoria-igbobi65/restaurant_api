@@ -1,4 +1,13 @@
-import { Body, Controller, Post, HttpException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  HttpException,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 
 import { AuthService } from './auth.service';
 import { createUserDto } from 'src/users/dto/create-user.dto';
@@ -18,5 +27,17 @@ export class AuthController {
     if (!dto.email && !dto.phonenumber)
       throw new HttpException('email or phonenumber is required!', 400);
     return this.authService.login(dto);
+  }
+
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth() {
+    //console.log();
+  }
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  googleAuthCallback(@Req() req: any) {
+    return this.authService.googleOauthSignIn(req.user);
   }
 }
