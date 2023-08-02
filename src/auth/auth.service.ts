@@ -4,21 +4,33 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/users/models/user.model';
 import { createUserDto } from 'src/users/dto/create-user.dto';
 import { E_INCORRECT_CREDENTIALS } from 'src/common/constants/constants.text';
+import {
+  SIGNUP_EMAIL_SUBJECT,
+  SIGNUP_EMAIL_TEMPLATE,
+} from 'src/common/constants/email-config.text';
 import { loginDto } from './dto/login.dto';
 import { UsersService } from 'src/users/users.service';
 import { GoogleOauthDto } from './dto/google-oauth.dto';
+import { MailService } from 'src/common/mail/mail.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private mailService: MailService,
   ) {}
 
   async register(dto: createUserDto) {
     const user = await this.usersService.createUser(dto);
     const token = await this.signToken(user);
 
+    await this.mailService.sendEmail(
+      user.email,
+      SIGNUP_EMAIL_SUBJECT,
+      SIGNUP_EMAIL_TEMPLATE,
+      { name: user.username },
+    );
     return { user, token };
   }
 
@@ -56,6 +68,12 @@ export class AuthService {
     // if all conditions is false, save their google details to the db
     user = await this.usersService.GoogleOauthCreateUser(dto);
     token = await this.signToken(user);
+    await this.mailService.sendEmail(
+      user.email,
+      SIGNUP_EMAIL_SUBJECT,
+      SIGNUP_EMAIL_TEMPLATE,
+      { name: user.username },
+    );
     return { user, token };
   }
 
