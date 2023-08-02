@@ -1,10 +1,17 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import * as crypto from 'crypto';
 
 import { User } from 'src/users/models/user.model';
 import { createUserDto } from 'src/users/dto/create-user.dto';
-import { E_INCORRECT_CREDENTIALS } from 'src/common/constants/constants.text';
 import {
+  E_INCORRECT_CREDENTIALS,
+  E_INVALID_TOKEN,
+  E_USER_NOT_EXISTS,
+} from 'src/common/constants/constants.text';
+import {
+  PASSWORD_RESET_SUBJECT,
+  PASSWORD_RESET_TEMPLATE,
   SIGNUP_EMAIL_SUBJECT,
   SIGNUP_EMAIL_TEMPLATE,
 } from 'src/common/constants/email-config.text';
@@ -25,6 +32,7 @@ export class AuthService {
     const user = await this.usersService.createUser(dto);
     const token = await this.signToken(user);
 
+    // send welcome email to users
     await this.mailService.sendEmail(
       user.email,
       SIGNUP_EMAIL_SUBJECT,
@@ -35,14 +43,15 @@ export class AuthService {
   }
 
   async login(dto: loginDto) {
-    const user = await this.usersService.findUserByCredentials(
-      dto.email,
-      dto.phonenumber,
-    );
-    if (!user || !(await user?.validatePassword(dto.password))) {
+    const { email, phonenumber, password } = dto;
+    const user = await this.usersService.findUserByCredentials({
+      $or: [{ email }, { phonenumber }],
+    });
+    if (!user || !(await user?.validatePassword(password))) {
       throw new HttpException(E_INCORRECT_CREDENTIALS, 400);
     }
-    const token = await this.signToken(user);
+    const token = await this.signToken(user); // sign user token
+    user.password = undefined; // delete user password from return body.
     return { user, token };
   }
 
@@ -74,6 +83,40 @@ export class AuthService {
       SIGNUP_EMAIL_TEMPLATE,
       { name: user.username },
     );
+    return { user, token };
+  }
+
+  async forgotPassword(email: string, baseURL: string) {
+    const user = await this.usersService.findUserByEmail(email); // find user by provided email
+    if (!user) throw new HttpException(E_USER_NOT_EXISTS, 404);
+
+    const resetToken = user.createResetPasswordToken(); // create a hashed reset token for user
+    await user.save({ validateBeforeSave: false }); // save the token to the user document
+    const resetLink = `${baseURL}/auth/resetPassword?token=${resetToken}`; // generate reset URL for user
+
+    await this.mailService.sendEmail(
+      email,
+      PASSWORD_RESET_SUBJECT,
+      PASSWORD_RESET_TEMPLATE,
+      { username: user.username, resetLink },
+    );
+    return;
+  }
+
+  async resetpassword(Token: string, password: string) {
+    const hashedToken = crypto.createHash('sha256').update(Token).digest('hex');
+    const user = await this.usersService.findUserByCredentials({
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: Date.now() },
+    });
+
+    if (!user) throw new HttpException(E_INVALID_TOKEN, 400);
+
+    user.password = password; // save new user password
+    user.passwordResetToken = undefined; // Delete saved hashed token from user document
+    user.passwordResetExpires = undefined; // Remove reset token expiry time
+    await user.save(); // update document to reflect changes
+    const token = await this.signToken(user);
     return { user, token };
   }
 
