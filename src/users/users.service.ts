@@ -17,7 +17,10 @@ export class UsersService {
   ) {}
 
   async createUser(dto: createUserDto) {
-    const user = await this.findUserByCredentials(dto.email, dto.phonenumber); // check if user with credentials exists in the db
+    const { email, phonenumber } = dto;
+    const user = await this.findUserByCredentials({
+      $or: [{ email }, { phonenumber }],
+    }); // check if user with credentials exists in the db
     if (user) throw new HttpException(E_USER_EXISTS, 409); // throw error if user with any of the credentials exists
 
     return await this.userModel.create(dto); // create new user
@@ -54,9 +57,7 @@ export class UsersService {
     return this.userModel.findOne({ _id: id });
   }
 
-  async findUserByCredentials(email: string, phonenumber: string) {
-    return this.userModel
-      .findOne({ $or: [{ email }, { phonenumber }] })
-      .select('+password');
+  async findUserByCredentials(credentials: any) {
+    return this.userModel.findOne(credentials).select('+password');
   }
 }
