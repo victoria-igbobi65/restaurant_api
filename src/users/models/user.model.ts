@@ -1,6 +1,7 @@
 import { Prop, SchemaFactory, Schema } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
+import * as crypto from 'crypto';
 
 import { Gender, Role } from 'src/common/constants/enums';
 
@@ -52,7 +53,7 @@ export class User extends Document {
   passwordResetToken: string;
 
   @Prop({ default: null })
-  passwordResetexpires: Date;
+  passwordResetExpires: Date;
 
   async validatePassword(password: string): Promise<boolean> {
     return await bcrypt.compare(password, this.password);
@@ -68,6 +69,22 @@ export class User extends Document {
     }
 
     return false;
+  }
+
+  createResetPasswordToken() {
+    // GENERATE RESET TOKEN
+    const resetToken = crypto.randomBytes(32).toString('hex');
+
+    //ENCRYPT RESET TOKEN TO BE SAVED TO THE DB
+    this.passwordResetToken = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
+
+    // ADD A RESET TOKEN EXPIRES
+    this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
+
+    return resetToken;
   }
 }
 export const UserSchema = SchemaFactory.createForClass(User);
@@ -85,6 +102,7 @@ UserSchema.pre('save', function (next) {
   if (!this.isModified('password') || this.isNew) return next();
 
   this.passwordChangedAt = new Date(Date.now() - 1000);
+  next();
 });
 
 UserSchema.methods.validatePassword = async function (
@@ -104,6 +122,22 @@ UserSchema.methods.changePasswordAfter = function (JWTTimestamp: number) {
   }
 
   return false;
+};
+
+UserSchema.methods.createResetPasswordToken = function () {
+  // GENERATE RESET TOKEN
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  //ENCRYPT RESET TOKEN TO BE SAVED TO THE DB
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  // ADD A RESET TOKEN EXPIRES
+  this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
+
+  return resetToken;
 };
 
 /* Indexing */
