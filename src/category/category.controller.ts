@@ -5,7 +5,6 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   UseInterceptors,
   UploadedFile,
   HttpException,
@@ -14,7 +13,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
 import { E_IMAGE_NOT_PROVIDED } from 'src/common/constants/constants.text';
 
 @Controller('category')
@@ -41,16 +39,13 @@ export class CategoryController {
     return this.categoryService.findCategoryBySlug(slug);
   }
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateCategoryDto: UpdateCategoryDto,
+  @Patch('update-image/:slug')
+  @UseInterceptors(FileInterceptor('image'))
+  updateCategoryImage(
+    @UploadedFile() file: Express.Multer.File,
+    @Param('slug') slug: string,
   ) {
-    return this.categoryService.update(+id, updateCategoryDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.categoryService.remove(+id);
+    if (!file) throw new HttpException(E_IMAGE_NOT_PROVIDED, 400);
+    return this.categoryService.updateCategoryImage(file, slug);
   }
 }
