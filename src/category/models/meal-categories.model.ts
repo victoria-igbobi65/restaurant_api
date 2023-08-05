@@ -17,6 +17,7 @@ export class Category extends Document {
 export const CategorySchema = SchemaFactory.createForClass(Category);
 
 CategorySchema.pre('save', async function (next) {
+  if (!this.isNew) return next();
   this.slug = slugify(this.name, { lower: true });
   this.name = this.name.toLowerCase();
   next();
