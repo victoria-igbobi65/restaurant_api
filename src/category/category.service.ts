@@ -3,7 +3,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
 import { CloudinaryService } from 'src/common/cloudinary/cloudinary.service';
 import { Category } from './models/meal-categories.model';
 import {
@@ -21,7 +20,7 @@ export class CategoryService {
   async create(file: Express.Multer.File, dto: CreateCategoryDto) {
     const categoryImage = await this.cloudinaryService.uploadImage(file);
     let category = await this.findCategoryByName(dto.name);
-    if (category) throw new HttpException(E_CATEGORY_EXISTS, 409);
+
     category = await this.categoryModel.create({
       name: dto.name,
       imageUrl: categoryImage.url,
@@ -36,22 +35,36 @@ export class CategoryService {
 
   async findOne(slug: string) {
     const category = await this.findCategoryBySlug(slug);
-    if (!category) throw new HttpException(E_CATEGORY_NOT_EXISTS, 404);
     return { category };
   }
 
-  update(id: number, updateCategoryDto: UpdateCategoryDto) {
-    return `This action updates a #${id} category`;
+  async updateCategoryImage(file: Express.Multer.File, slug: string) {
+    const categoryImage = await this.cloudinaryService.uploadImage(file);
+
+    const category = await this.findCategoryBySlug(slug);
+    category.imageUrl = categoryImage.url;
+    await category.save();
+
+    return { category };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} category`;
-  }
   async findCategoryByName(name: string) {
-    return this.categoryModel.findOne({ name });
+    const category = await this.categoryModel.findOne({
+      name: { $regex: `^${name}$`, $options: 'i' },
+    });
+    if (category) throw new HttpException(E_CATEGORY_EXISTS, 409);
+    return category;
   }
 
   async findCategoryBySlug(slug: string) {
-    return this.categoryModel.findOne({ slug });
+    const category = await this.categoryModel.findOne({ slug });
+    if (!category) throw new HttpException(E_CATEGORY_NOT_EXISTS, 404);
+    return category;
+  }
+
+  async findCategoryById(id: string) {
+    const category = await this.categoryModel.findOne({ id });
+    if (!category) throw new HttpException(E_CATEGORY_NOT_EXISTS, 404);
+    return category;
   }
 }
