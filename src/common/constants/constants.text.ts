@@ -8,3 +8,5 @@ export const E_INVALID_TOKEN = 'Token is invalid or expired!';
 export const E_CATEGORY_EXISTS = 'This category already exists!';
 export const E_CATEGORY_NOT_EXISTS = 'ugh ugh!, this category does not exist!';
 export const E_IMAGE_NOT_PROVIDED = 'Image is not provided!';
+export const E_MEAL_EXISTS = 'This Meal already exists';
+export const E_MEAL_NOT_EXIST = 'ugh ugh!, this meal does not exist!';
