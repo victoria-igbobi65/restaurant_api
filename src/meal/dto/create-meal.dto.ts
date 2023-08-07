@@ -30,11 +30,16 @@ export class CreateMealDto {
   @IsNotEmpty({ message: 'category cannot be empty!' })
   readonly category: string;
 
-  @IsString()
-  @IsEnum(specialTags)
+  @IsString({ each: true })
+  @IsEnum(specialTags, { each: true })
   @IsOptional()
-  @IsNotEmpty({ message: 'label cannot be empty!' })
-  readonly label: specialTags;
+  @IsNotEmpty({ message: 'label cannot be empty!', each: true })
+  readonly label: [specialTags];
+
+  @IsString({ each: true })
+  @IsOptional()
+  @IsNotEmpty({ message: 'ingredients cannot be empty!', each: true })
+  readonly ingredients: string[];
 
   @IsNumber()
   @IsPositive()
