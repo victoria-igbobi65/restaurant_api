@@ -1,5 +1,5 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import slugify from 'slugify';
 import { specialTags } from 'src/common/constants/enums';
 
@@ -17,20 +17,23 @@ export class Meal extends Document {
   @Prop()
   description: string;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, required: true })
-  category: MongooseSchema.Types.ObjectId;
+  @Prop({ type: Types.ObjectId, required: true, ref: 'Category' })
+  category: Types.ObjectId;
 
   @Prop({ default: true })
   isAvailable: boolean;
 
-  @Prop({ required: true })
+  @Prop({ default: null })
   imageUrl: string;
 
-  @Prop({ enum: specialTags, default: null })
-  label: string;
+  @Prop({ type: [String], enum: [specialTags], default: [] })
+  label: string[];
+
+  @Prop({ type: [String], default: [] })
+  ingredients: string[];
 
   @Prop({ default: 0 })
-  ratings: number;
+  rating: number;
 
   @Prop({ default: null })
   preparationTime: number;
