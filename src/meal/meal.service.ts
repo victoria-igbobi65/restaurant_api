@@ -20,16 +20,24 @@ export class MealService {
     private categoryService: CategoryService,
   ) {}
 
-  async create(dto: CreateMealDto, file: Express.Multer.File) {
-    const mealImage = await this.cloudinaryService.uploadImage(file);
+  async create(dto: CreateMealDto) {
     await this.categoryService.findCategoryById(dto.category);
     let data = await this.findMealByName(dto.name);
-    data = await this.mealModel.create({ ...dto, image: mealImage.url });
+    data = await this.mealModel.create(dto);
     return { data };
   }
 
-  findAll() {
-    return `This action returns all meal`;
+  async uploadMealImage(file: Express.Multer.File, slug: string) {
+    const meal = await this.findMealBySlug(slug);
+    const mealImage = await this.cloudinaryService.uploadImage(file);
+    meal.imageUrl = mealImage.url;
+    await meal.save();
+    return { meal };
+  }
+
+  async findAll() {
+    const data = await this.mealModel.find();
+    return { count: data.length, data };
   }
 
   async findOne(slug: string) {
@@ -37,12 +45,14 @@ export class MealService {
     return { data };
   }
 
-  update(id: number, updateMealDto: UpdateMealDto) {
+  async update(id: number, updateMealDto: UpdateMealDto) {
     return `This action updates a #${id} meal`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} meal`;
+  async remove(slug: string) {
+    const data = await this.mealModel.findOneAndDelete({ slug: slug });
+    if (!data) throw new HttpException(E_MEAL_NOT_EXIST, 404);
+    return;
   }
 
   async findMealByName(name: string) {
@@ -54,7 +64,10 @@ export class MealService {
   }
 
   async findMealBySlug(slug: string) {
-    const meal = await this.mealModel.findOne({ slug });
+    const meal = await this.mealModel
+      .findOne({ slug: slug })
+      .populate('category')
+      .exec();
     if (!meal) throw new HttpException(E_MEAL_NOT_EXIST, 404);
     return meal;
   }
