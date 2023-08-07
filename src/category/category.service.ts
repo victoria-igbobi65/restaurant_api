@@ -63,7 +63,7 @@ export class CategoryService {
   }
 
   async findCategoryById(id: string) {
-    const category = await this.categoryModel.findOne({ id });
+    const category = await this.categoryModel.findOne({ _id: id });
     if (!category) throw new HttpException(E_CATEGORY_NOT_EXISTS, 404);
     return category;
   }
