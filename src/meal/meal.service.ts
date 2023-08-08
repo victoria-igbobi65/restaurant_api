@@ -35,8 +35,14 @@ export class MealService {
     return { meal };
   }
 
-  async findAll() {
-    const data = await this.mealModel.find();
+  async findAll(query: string) {
+    const searchAndFilter = this.searchAndFilter(query); // build query
+    const pagination = this.paginate(query);
+    const data = await this.mealModel
+      .find(searchAndFilter)
+      .skip(pagination.skip)
+      .limit(pagination.perPage)
+      .exec();
     return { count: data.length, data };
   }
 
@@ -46,7 +52,7 @@ export class MealService {
   }
 
   async update(id: number, updateMealDto: UpdateMealDto) {
-    return `This action updates a #${id} meal`;
+    return { id, updateMealDto };
   }
 
   async remove(slug: string) {
@@ -70,5 +76,62 @@ export class MealService {
       .exec();
     if (!meal) throw new HttpException(E_MEAL_NOT_EXIST, 404);
     return meal;
+  }
+
+  searchAndFilter(queryParams: any) {
+    const query: any = {};
+
+    if (queryParams.q) {
+      query.$or = [
+        { name: { $regex: queryParams.q, $options: 'i' } },
+        {
+          ingredients: { $elemMatch: { $regex: queryParams.q, $options: 'i' } },
+        },
+        { description: { $regex: queryParams.q, $options: 'i' } },
+      ];
+    }
+
+    if (queryParams.isAvailable) {
+      query.isAvailable = queryParams.isAvailable;
+    }
+
+    if (queryParams.label) {
+      query.label = { $in: queryParams.label };
+    }
+
+    if (queryParams.minPrice) {
+      query.price = { $gte: parseFloat(queryParams.minPrice) };
+    }
+
+    if (queryParams.maxPrice) {
+      query.price = { ...query.price, $lte: parseFloat(queryParams.maxPrice) };
+    }
+
+    if (queryParams.minPreparationTime) {
+      query.preparationTime = {
+        $gte: parseInt(queryParams.minPreparationTime),
+      };
+    }
+
+    if (queryParams.maxPreparationTime) {
+      query.preparationTime = {
+        ...query.preparationTime,
+        $lte: parseInt(queryParams.maxPreparationTime),
+      };
+    }
+
+    if (queryParams.rating) {
+      query.rating = { $gte: queryParams.rating };
+    }
+
+    return query;
+  }
+
+  paginate(queryParams: any) {
+    const page = parseInt(queryParams.page) || 1;
+    const perPage = parseInt(queryParams.perPage) || 10;
+    const skip = (page - 1) * perPage;
+
+    return { skip, perPage };
   }
 }
