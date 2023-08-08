@@ -26,10 +26,6 @@ export class MealQueryParamsDto {
   rating: string;
 
   @IsOptional()
-  @IsString()
-  category: string;
-
-  @IsOptional()
   @IsNumberString()
   minPrice: string;
 
