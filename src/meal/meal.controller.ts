@@ -37,8 +37,8 @@ export class MealController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  findAll() {
-    return this.mealService.findAll();
+  findAll(@Query() query: string) {
+    return this.mealService.findAll(query);
   }
 
   @Patch('upload-image/:slug')
