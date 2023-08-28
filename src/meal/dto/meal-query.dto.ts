@@ -32,12 +32,4 @@ export class MealQueryParamsDto {
   @IsOptional()
   @IsNumberString()
   maxPrice: string;
-
-  @IsOptional()
-  @IsNumberString()
-  minPreparationTime: string;
-
-  @IsOptional()
-  @IsNumberString()
-  maxPreparationTime: string;
 }
