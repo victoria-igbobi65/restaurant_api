@@ -5,6 +5,8 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { CategoryModule } from './category/category.module';
 import { MealModule } from './meal/meal.module';
+import { OrderModule } from './order/order.module';
+import { TraysModule } from './trays/trays.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { MealModule } from './meal/meal.module';
     UsersModule,
     CategoryModule,
     MealModule,
+    OrderModule,
+    TraysModule,
   ],
   controllers: [],
   providers: [],
