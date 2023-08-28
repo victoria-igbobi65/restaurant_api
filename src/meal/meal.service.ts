@@ -99,29 +99,17 @@ export class MealService {
       query.label = { $in: queryParams.label };
     }
 
-    if (queryParams.minPrice) {
-      query.price = { $gte: parseFloat(queryParams.minPrice) };
-    }
-
-    if (queryParams.maxPrice) {
-      query.price = { ...query.price, $lte: parseFloat(queryParams.maxPrice) };
-    }
-
-    if (queryParams.minPreparationTime) {
-      query.preparationTime = {
-        $gte: parseInt(queryParams.minPreparationTime),
+    if (queryParams.minPricePerMeasurement) {
+      query.pricePerMeasurement = {
+        $gte: parseFloat(queryParams.minPricePerMeasurement),
       };
     }
 
-    if (queryParams.maxPreparationTime) {
-      query.preparationTime = {
-        ...query.preparationTime,
-        $lte: parseInt(queryParams.maxPreparationTime),
+    if (queryParams.maxPricePerMeasurement) {
+      query.price = {
+        ...query.price,
+        $lte: parseFloat(queryParams.maxPricePer),
       };
-    }
-
-    if (queryParams.rating) {
-      query.rating = { $gte: queryParams.rating };
     }
 
     return query;
