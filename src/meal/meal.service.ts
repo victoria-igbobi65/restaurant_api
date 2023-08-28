@@ -74,7 +74,11 @@ export class MealService {
       .findOne({ slug: slug })
       .populate('category')
       .exec();
-    if (!meal) throw new HttpException(E_MEAL_NOT_EXIST, 404);
+    if (!meal)
+      throw new HttpException(
+        `ugh ugh! meal with slug: ${slug} doesn't exist!`,
+        404,
+      );
     return meal;
   }
 
