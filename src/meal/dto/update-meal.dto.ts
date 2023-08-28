@@ -14,17 +14,12 @@ export class UpdateMealDto extends PartialType(CreateMealDto) {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  readonly price?: number;
+  readonly pricePerMeasurement?: number;
 
   @IsString()
   @IsDefined()
   @IsNotEmpty()
   readonly description?: string;
-
-  @IsNumber()
-  @IsPositive()
-  @IsNotEmpty()
-  readonly preparationTime?: number;
 
   @IsString({ each: true })
   @IsDefined()
