@@ -1,7 +1,7 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import slugify from 'slugify';
-import { specialTags } from 'src/common/constants/enums';
+import { mealMeasurementUnits, specialTags } from 'src/common/constants/enums';
 
 @Schema({ timestamps: true })
 export class Meal extends Document {
@@ -9,7 +9,10 @@ export class Meal extends Document {
   name: string;
 
   @Prop({ required: true })
-  price: number;
+  pricePerMeasurement: number;
+
+  @Prop({ required: true, enum: mealMeasurementUnits })
+  measurement: string;
 
   @Prop({})
   slug: string;
@@ -34,9 +37,6 @@ export class Meal extends Document {
 
   @Prop({ default: 0 })
   rating: number;
-
-  @Prop({ default: null })
-  preparationTime: number;
 
   @Prop({ default: null })
   nutritionalInfo: string;
