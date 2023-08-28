@@ -19,3 +19,14 @@ export enum specialTags {
   LOW_CALORIE = 'low calorie',
   HEALTHY = 'healthy',
 }
+
+export enum mealMeasurementUnits {
+  ONE_SPOON = '1 spoon',
+  ONE_PIECE = '1 pcs',
+  TWO_PIECES = '2 pcs',
+  THREE_PIECES = '3 pcs',
+  FIVE_PIECES = '5 pcs',
+  ONE_FULL = '1 full',
+  PER_SLICE = 'per slice',
+  ONE_WRAP = '1 wrap',
+}
