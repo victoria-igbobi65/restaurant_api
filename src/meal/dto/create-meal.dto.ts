@@ -8,7 +8,7 @@ import {
   IsMongoId,
   IsEnum,
 } from 'class-validator';
-import { specialTags } from 'src/common/constants/enums';
+import { mealMeasurementUnits, specialTags } from 'src/common/constants/enums';
 
 export class CreateMealDto {
   @IsString()
@@ -19,7 +19,13 @@ export class CreateMealDto {
   @IsNumber({})
   @IsNotEmpty({ message: 'price is required!' })
   @IsPositive({ message: 'Price must not be less than 0' })
-  readonly price: number;
+  readonly pricePerMeasurement: number;
+
+  @IsString()
+  @IsEnum(mealMeasurementUnits)
+  @IsDefined()
+  @IsNotEmpty({ message: 'Please provide meal unit measurement' })
+  readonly measurement: string;
 
   @IsString()
   @IsDefined()
@@ -40,12 +46,6 @@ export class CreateMealDto {
   @IsOptional()
   @IsNotEmpty({ message: 'ingredients cannot be empty!', each: true })
   readonly ingredients: string[];
-
-  @IsNumber()
-  @IsPositive()
-  @IsOptional()
-  @IsNotEmpty({ message: 'preparation time cannot be empty!' })
-  readonly preparationTime: number;
 
   @IsString()
   @IsDefined()
