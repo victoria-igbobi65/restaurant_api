@@ -14,5 +14,6 @@ import { CategoryModule } from 'src/category/category.module';
   ],
   controllers: [MealController],
   providers: [MealService],
+  exports: [MealService],
 })
 export class MealModule {}
